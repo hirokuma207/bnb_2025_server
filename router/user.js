@@ -17,13 +17,14 @@ router.get('/:id', (ctx, next) => {
 	};
 });
 
-router.post('/', (ctx, next) => {
+// 회원 가입
+router.post('/', $API_CALL(async(ctx, next) => {
 	const payload = ctx.request.body;
-	ctx.body = {
-		row: '유저 회원가입',
-		payload,
-	};
-});
+	// console.log(payload);
+	const files = ctx.request.files;
+	// throw new Error("예외 발생")
+	return {payload, files};
+}));
 
 router.put('/:id', (ctx, next) => {
 	const id = ctx.params.id;

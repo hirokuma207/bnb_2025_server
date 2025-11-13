@@ -7,6 +7,10 @@ const { koaBody } = require('koa-body');
 
 const app = new Koa();
 
+// 전역 라우터 래핑 함수
+const API_CALL = require('./lib/API_CALL');
+global.$API_CALL = API_CALL;
+
 // DB 연결
 const connectSequelize = require('./plugins/connectSequelize');
 global.$DB = connectSequelize(__dirname + '/models');
@@ -17,7 +21,10 @@ global.$DB = connectSequelize(__dirname + '/models');
 // });
 
 
-app.use(koaBody()); // 코아 바디 파서
+app.use(koaBody({
+  multipart: true,
+  json: true,
+})); // 코아 바디 파서
 
 const KoaAutoRouter = require('./KoaAutoRouter');
 KoaAutoRouter(app, '/router', "");
