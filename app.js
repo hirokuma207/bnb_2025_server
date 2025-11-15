@@ -1,6 +1,5 @@
 require('dotenv').config();
-// console.log(process.env); // remove this after you've confirmed it is working
-
+const fs = require('fs');
 const Koa = require('koa');
 const { koaBody } = require('koa-body');
 
@@ -15,11 +14,29 @@ global.$API_CALL = API_CALL;
 const connectSequelize = require('./plugins/connectSequelize');
 global.$DB = connectSequelize(__dirname + '/models');
 
-// DB 연결 테스트
-// $DB.user.findAll().then(users => {
-//   console.log('Users:',users);
-// });
+global.$UPLOAD_PATH = process.env.UPLOAD_PATH;
+if(!fs.existsSync($UPLOAD_PATH)) {
+  fs.mkdirSync($UPLOAD_PATH, { recursive: true})  
+}
 
+
+// logger
+app.use(async (ctx, next) => {
+  await next();
+  const rt = ctx.response.get('X-Response-Time');
+  console.log(`${ctx.method} ${ctx.url} - ${rt}`);
+});
+
+// x-response-time
+app.use(async (ctx, next) => {
+  const start = Date.now();
+  await next();
+  const ms = Date.now() - start;
+  ctx.set('X-Response-Time', `${ms}ms`);
+});
+
+const ipv4 = require('./middlewares/ipv4');
+app.use(ipv4);
 
 app.use(koaBody({
   multipart: true,

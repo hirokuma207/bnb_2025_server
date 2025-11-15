@@ -3,8 +3,8 @@ module.exports = (sequelize, DataTypes) => {
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
-      comment: "이메일 사용자 ID 처럼 사용됨"
+      unique: false,  // true 에서 false 로 바꿨슴.... 강사한테 질문!!!
+      comment: '이메일 사용자 ID 처럼 사용됨'
     },
     name: {
       type: DataTypes.STRING,
@@ -26,12 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM,
       values: ['M','F'],
       allowNull: false,
-    },
-    photo: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      comment : '사진 경로'
-    },
+    },    
     role: {
       type: DataTypes.ENUM,
       values: ['Admin', 'Seller', 'Company', 'User'],
@@ -46,6 +41,7 @@ module.exports = (sequelize, DataTypes) => {
     connectedAt: {
       type: DataTypes.DATE,
       allowNull: true,
+      comment: '로그인 시간'
     },
     connectedIP: {
       type: DataTypes.STRING,

@@ -74,6 +74,8 @@
       })
     }
 
+    db.sequelize = sequelize;
+    
     return db;
     
   }
