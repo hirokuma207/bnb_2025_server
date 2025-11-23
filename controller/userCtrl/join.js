@@ -1,6 +1,6 @@
 const pwUtil = require('../../lib/pwUtil');
-const fs = require('fs');
-const path = require('path');
+const fileUtil = require('../../lib/fileUtil');
+
 
 module.exports = async (payload, photo, createdIp) => {
   
@@ -9,53 +9,29 @@ module.exports = async (payload, photo, createdIp) => {
   payload.password = await pwUtil.hashPassword(payload.password);
 
   const t = await $DB.sequelize.transaction();
+
   try {
-
-
   // 사용자 정보 DB 저장
   const user = await $DB.user.create(payload, { transaction: t });
 
-  // photo 실제 경로에 저장을 합시다.
-  // TODO: 파일 저장 함수 따로 빼자.
-  const uploadPath = $UPLOAD_PATH + '/member';
-  if (!fs.existsSync(uploadPath)) {
-    fs.mkdirSync(uploadPath, { recursive: true });
+  // 사진이 업로드 되었으면 파일 저장후 DB에 저장
+  if(photo) {
+    // DB 저장 객체
+    const filePayload = {
+      userId : user.id, 
+      boardName: 'member',
+      type: 'photo',
+      ...fileUtil.write('/member', photo),
+    }
+    // console.log(filePayload);
+    await $DB.files.create(filePayload, { transaction: t });
   }
-
-  const ext = path.extname(photo.originalFilename).toLowerCase();
-  const fileName = photo.newFilename + ext;
-  fs.writeFileSync(
-    path.join(uploadPath, fileName), // 목적지
-    fs.readFileSync(photo.filepath) // 원본
-  )
-
-  // DB 저장 객체
-  const filePayload = {
-    userId : user.id, 
-    boardName: 'member',
-    type: 'photo',
-    fileName: fileName,
-    displayName: photo.originalFilename,
-    mimetype: photo.mimetype,
-    size: photo.size,
-  }
-
-  const file = await $DB.files.create(filePayload, { transaction: t });
-
+   
   await t.commit ();
-
-  return {
-    user,
-    // payload,
-    // photo,
-    // filePayload,
-    file,
-  }
+  return true;  
   }catch(e) {
-  // TODO: 파일 업로드 되었다면 삭제 해야 함.
    await t.rollback();
-   console.log("롤백");
-   throw e; 
-    
+   fileUtil.remove('./member', fileUtil.getFileName(photo))
+   throw e;     
   }
 }
