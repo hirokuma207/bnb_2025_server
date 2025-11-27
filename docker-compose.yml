@@ -1,0 +1,12 @@
+services:
+  service:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: bnb-server
+    container_name: bnb-server
+    restart: always
+    ports:
+      - "18000:18000" # 외부포트 : 내부 앱실행 포트
+    volumes:
+      - /home/ubuntu/apps/uploadData:/upload
